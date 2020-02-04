@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CMPSC 445</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/switches.css">
+
+    <style type="text/css">
+        html { height: 100% }
+        body { height: 100%; margin: 0; padding: 0 }
+        #map_canvas { height: 100% }
+    </style>
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6v5-2uaq_wusHDktM9ILcqIrlPtnZgEk&sensor=false">
+    </script>
+
+    <script type="text/javascript">
+
+        var coordinateType;
+        function toggle() {
+            if (document.getElementById("coordType").checked) {
+                coordinateType = "dropoff";
+                document.getElementById("toggleHeader").innerHTML = "Set Drop Off Coordinates"
+            }
+            else {
+                coordinateType = "pickup";
+                document.getElementById("toggleHeader").innerHTML = "Set Pick Up Coordinates"
+            }
+        }
+
+        var map;
+        function initialize() {
+            var pickup_marker;
+            var dropoff_marker;
+            coordinateType = "pickup";
+            var myLatlng = new google.maps.LatLng(41.882653, -87.623316);
+            var myOptions = {
+                zoom: 13,
+                center: myLatlng,
+                mapTypeId: google.maps.MapTypeId.HYBRID
+            }
+            map = new google.maps.Map(document.getElementById("gmap"), myOptions);
+            // marker refers to a global variable
+            pickup_marker = new google.maps.Marker({
+                position: myLatlng,
+                map: map,
+                icon: 'red_MarkerP.png'
+            });
+            dropoff_marker = new google.maps.Marker({
+                position: myLatlng,
+                map: map,
+                icon: 'blue_MarkerD.png'
+            });
+
+            google.maps.event.addListener(map, "click", function(event) {
+                // get lat/lon of click
+                var clickLat = event.latLng.lat();
+                var clickLon = event.latLng.lng();
+
+                // show in input box
+                document.getElementById(coordinateType + "-lat").value = clickLat.toFixed(5);
+                document.getElementById(coordinateType + "-lon").value = clickLon.toFixed(5);
+
+                if(coordinateType == "pickup") {
+                    pickup_marker.setMap(null);
+
+                    pickup_marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(clickLat,clickLon),
+                        map: map,
+                        icon: 'red_MarkerP.png'
+                    });
+                }
+                else {
+                    dropoff_marker.setMap(null);
+
+                    dropoff_marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(clickLat,clickLon),
+                        map: map,
+                        icon: 'blue_MarkerD.png'
+                    });
+                }
+            });
+        }
+
+        window.onload = function () { initialize()};
+
+
+    </script>
+
+    <style>
+        div#gmap {
+            width: 80%;
+            height: 500px;
+            border:double;
+        }
+    </style>
+
+
+</head>
+<body>
+<script src="js/main.js"></script>
+<script src="map.js"></script>
+
+<header class="masthead">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <div class="page-heading">
+                    <h1>Chicago Taxi Fare Predictor</h1>
+                    <span class="subheading">Are you being Overcharged?</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            <p>Please Fill in the Required Fields</p>
+
+            <form name="sentMessage" id="contactForm" novalidate="" action="submitscript.php" target="dummyframe">
+                <div class="control-group">
+                    <div class="form-group floating-label-form-group controls">
+                        <label>Date</label>
+                        <input type="date" class="form-control" placeholder="Date of trip" id="date" required="" data-validation-required-message="Please enter your name.">
+                        <p class="help-block text-danger"></p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="form-group floating-label-form-group controls">
+                        <label>Time</label>
+                        <input type="time" class="form-control" placeholder="Time in which trip took place" id="time" required="" data-validation-required-message="Please enter your email address.">
+                        <p class="help-block text-danger"></p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="form-group col-xs-12 floating-label-form-group controls">
+                        <label>Trip Duration</label>
+                        <input type="tel" class="form-control" placeholder="Trip Duration (in seconds)" id="duration" required="" data-validation-required-message="Please enter your phone number.">
+                        <p class="help-block text-danger"></p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="form-group col-xs-12 floating-label-form-group controls">
+                        <label>Miles</label>
+                        <input type="number" class="form-control" placeholder="Miles traveled" id="miles" required="" data-validation-required-message="Please enter your phone number.">
+                        <p class="help-block text-danger"></p>
+                    </div>
+                </div>
+                <br>
+                <h3 id="toggleHeader">Set Pick Up Coordinates (Select switch to toggle)</h3>
+                <label class="switch" onclick="toggle()">
+                    <input type="checkbox" id="coordType">
+                    <span class="slider"></span>
+                </label>
+                <!-- MAP HOLDER -->
+                <div id="gmap" style="margin-top: 10px"></div>
+
+                <div class="control-group">
+                    <table>
+                        <tr>
+                            <td>
+                                <h2>Pick Up Coordinates</h2>
+                                <div class="form-group col-xs-12 floating-label-form-group controls">
+                                    <label>Pick Up</label>
+                                    <input type="number" class="form-control" placeholder="Latitude" id="pickup-lat" required="" data-validation-required-message="Please enter your phone number.">
+                                    <input type="text" class="form-control" placeholder="Longitude" id="pickup-lon" required="" data-validation-required-message="Please enter your phone number.">
+
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </td>
+                            <td>
+                                <h2>Drop Off Coordinates</h2>
+                                <div class="form-group col-xs-12 floating-label-form-group controls" style="float: right">
+                                    <label>Drop Off</label>
+                                    <input type="number" class="form-control" placeholder="Latitude" id="dropoff-lat" required="" data-validation-required-message="Please enter your phone number.">
+                                    <input type="number" class="form-control" placeholder="Longitude" id="dropoff-lon" required="" data-validation-required-message="Please enter your phone number.">
+                                    <p class="help-block text-danger"></p>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <br>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="getResult()" id="sendMessageButton" style="pointer-event: none; cursor: default">Generate Prediction</button>
+                    <p id = "submit"></p>
+                </div>
+                <br/>
+                <p> You should expect to pay: </p>
+                <p id="fare" align="center" style ="border:3px; border-style:solid; border-color:#FFA500; padding: 0.5em; font-size: 30pt;"/>
+                <p> Accuracy of the prediction: </p>
+                <p id="accuracy" align="center" style ="border:3px; border-style:solid; border-color:#FFA500; padding: 0.5em; font-size: 30pt;"/>
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="kNN()" id="sendMessageButton" style="pointer-event: none; cursor: default">Visualize kNN</button>
+                    <div id="chartContainer" style="height: 300px; width: 100%;"/>
+                    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+ <iframe width="0" height="0" name="dummyframe" id="dummyframe"></iframe>
+
+
+</body>
+</html>
+
+<!--start month, day [integer, integer]-->
+<!--time {hour:minute}[integer:integer] - 24 time-->
+<!--trip duration [integer]-->
+<!--miles [integer]-->
+<!--pick up latitude, longitude [integer, integer]-->
+<!--drop off latidude, longitude [integer, integer]-->
